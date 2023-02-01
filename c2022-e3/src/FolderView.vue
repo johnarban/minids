@@ -210,4 +210,67 @@ export default defineComponent({
     cursor: pointer;
   }
 }
+
+/* from https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/ */
+input[type="range"] {
+    -webkit-appearance: inherit;
+    -moz-appearance: inherit;
+    appearance: inherit;
+    margin: 5px;
+    --track-height: 0.5em;
+    --thumb-radius: 1em;
+    --thumb-color: rgb(0, 152, 254);
+    --track-color: rgba(0, 178, 254, 0.5);
+    --thumb-border: none;
+  }
+  
+
+  
+  
+  input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: inherit;
+      -moz-appearance: inherit;
+      appearance: inherit;
+    width: var(--thumb-radius);
+    height: var(--thumb-radius);
+    margin-top: calc(var(--track-height) / 2 - var(--thumb-radius) / 2);
+    border-radius: 50%;
+    background: var(--thumb-color);
+    border: var(--thumb-border);
+    
+    
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    -webkit-appearance: inherit;
+    -moz-appearance: inherit;
+    appearance: inherit;
+    width: var(--thumb-radius);
+    height: var(--thumb-radius);
+    margin-top: calc(var(--track-height) / 2 - var(--thumb-radius) / 2);
+    border-radius: 50%;
+    background: var(--thumb-color);
+    cursor: pointer;
+    border: var(--thumb-border)
+  }
+  
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    background: var(--track-color);
+    /* outline: 1px solid white; */
+    border-radius: calc(var(--track-height) / 2);
+    height: var(--track-height);
+    margin-top: 0;
+  }
+  
+
+  
+input[type="range"]::-moz-range-track {
+    background: var(--track-color);
+    /* outline: 1px solid white; */
+    border-radius: calc(var(--track-height) / 2);
+    height:var(--track-height);
+    margin-top: 0;
+  }
+
 </style>
