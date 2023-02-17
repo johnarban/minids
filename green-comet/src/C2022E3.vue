@@ -1061,7 +1061,7 @@ export default defineComponent({
     },
 
     toDateString(date: Date) {
-      // date = new Date(date.getTime() + this.selectedTimezoneOffset) // ignore timezone
+      date = new Date(date.getTime() + this.selectedTimezoneOffset) // ignore timezone
       return `${date.getUTCMonth() + 1}/${date.getUTCDate()}/${date.getUTCFullYear()}`;
     },
 
@@ -1783,6 +1783,7 @@ export default defineComponent({
 
     updateForDateTime() {
       this.logTimes('updateForDateTime')
+      this.setTime(this.dateTime);
       this.updateHorizon(this.dateTime); 
       // this.showImageForDateTime(this.dateTime);
       // this.updateViewForDate(options);
@@ -1807,7 +1808,7 @@ export default defineComponent({
     },
 
     logTimes(pre: string, date = null as Date | null) { 
-      console.log('running',pre)
+      console.log('running',pre);
       // console.log("::: selectedTime:", new Date(this.selectedTime))
       // console.log('::: selectedDate:', this.selectedDate)
       // console.log('::: wwtCurrentTime:', this.wwtCurrentTime)
@@ -1854,7 +1855,6 @@ export default defineComponent({
         newHours += 1;
       }
 
-      console.log(newHours);
       if (newHours >= 24) {
         newHours -= 24;
         this.moveOneDayForward();
