@@ -677,6 +677,25 @@ const minDate = Math.min(...allDates, ...cometImageDates);
 const maxDate = Math.max(...allDates, ...cometImageDates);
 const dates: number[] = [];
 
+function binarySearchClosest(arr: number[] ,target: number): number {
+  const midpoint = Math.floor(arr.length/2);
+
+  if (arr[midpoint] === target){
+    return arr[midpoint];
+  }
+  if (arr.length === 1) {
+    return arr[0];
+  }
+
+  if (arr[midpoint] > target) {
+    return binarySearchClosest(arr.slice(0, midpoint), target);
+  } else if (arr[midpoint] < target){
+    return binarySearchClosest(arr.slice(midpoint), target);
+  }
+
+  return arr[0];
+}
+
 const d = new Date(minDate);
 let t = d.getTime();
 while (t <= maxDate) {
@@ -1031,9 +1050,7 @@ export default defineComponent({
   methods: {
 
     closestSliderDate(time: number) {
-      return dates.reduce((prev: number, curr: number) => {
-        return (Math.abs(curr - time) < Math.abs(prev - time) ? curr : prev);
-      });
+      return binarySearchClosest(dates, time);
     },
 
     updateTimeFromSlider(time: number) {
