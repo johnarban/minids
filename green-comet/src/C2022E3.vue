@@ -296,8 +296,8 @@
               return allDates.includes(d) || cometImageDates.includes(d);
             }"
             :order="false"
-            v-model="selectedTime"
-            @change="onTimeSliderchange"
+            v-model="sliderValue"
+            @change="(value: number) => onTimeSliderChange(value)"
             :data="dates"
             tooltip="always"
             :tooltip-formatter="(v: number) => 
@@ -681,7 +681,7 @@ const d = new Date(minDate);
 let t = d.getTime();
 while (t <= maxDate) {
   dates.push(t);
-  dates.push(t + 86400000/2);
+  dates.push(t + MILLISECONDS_PER_DAY / 2);
   d.setUTCDate(d.getUTCDate() + 1);
   t = d.getTime();
 }
@@ -785,6 +785,7 @@ export default defineComponent({
       // Harvard Observatory
       timeOfDay: { hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds() },
       selectedTime: now.setUTCHours(0, 0, 0, 0),
+      sliderValue: now.setUTCHours(0, 0, 0, 0),
       selectedTimezone: "America/New_York",
       location: {
         latitudeRad: D2R * 42.3814,
@@ -795,6 +796,8 @@ export default defineComponent({
   },
 
   created() {
+
+    console.log(this.timeOfDay);
 
     this.waitForReady().then(async () => {
 
@@ -1032,6 +1035,13 @@ export default defineComponent({
   },
 
   methods: {
+
+    updateTimeFromSlider(time: number) {
+      const thruDay = time % MILLISECONDS_PER_DAY;
+      const date = time - thruDay;
+      this.selectedTime = date;
+      this.changeTimeOfDay(thruDay);
+    },
 
     clearPlayingInterval() {
       if (this.playingIntervalId !== null) {
@@ -1279,8 +1289,11 @@ export default defineComponent({
       return false
     },
 
-    onTimeSliderchange(options?: MoveOptions) {
+    onTimeSliderChange(milliseconds: number, options?: MoveOptions) {
+      this.updateTimeFromSlider(milliseconds);
       this.$nextTick(() => {
+        console.log(this.dateTime);
+        console.log(this.timeOfDay);
         this.showImageForDateTime(this.dateTime);
         this.updateViewForDate(options);
       });
@@ -1620,9 +1633,13 @@ export default defineComponent({
       if (!this.isPointerMoving) {
         this.updateLastClosePoint(event);
         if (this.lastClosePt !== null) {
-          this.selectedTime = this.lastClosePt.date.getTime();
+          let time = this.lastClosePt.date.getTime();
+          const thruDay = time % MILLISECONDS_PER_DAY;
+          time -= thruDay;
+          this.selectedTime = time;
+          this.changeTimeOfDay(thruDay);
           this.$nextTick(() => {
-            this.onTimeSliderchange();
+            this.showImageForDateTime(this.dateTime);
             this.updateViewForDate();
           });
         }
@@ -1764,7 +1781,7 @@ export default defineComponent({
 
     updateForDateTime() {
       this.logTimes('updateForDateTime')
-      if (!this.dontSetTime) { this.setTime(this.dateTime) }
+      //if (!this.dontSetTime) { this.setTime(this.dateTime) }
       this.updateHorizon(this.dateTime); 
       // this.showImageForDateTime(this.dateTime);
       // this.updateViewForDate(options);
@@ -1797,6 +1814,54 @@ export default defineComponent({
       // if (date != null) {
       //   console.log('::: manual date:', date)
       // }
+    },
+
+    hmsForMs(milliseconds: number) {
+      const sgn = milliseconds > 0 ? 1 : -1;
+      milliseconds = Math.abs(milliseconds);
+      let hours = Math.floor(milliseconds / (1000 * 60 * 60));
+      milliseconds -= hours * (1000 * 60 * 60);
+      let minutes = Math.floor(milliseconds / (1000 * 60));
+      milliseconds -= minutes * (1000 * 60);
+      let seconds = milliseconds / 1000;
+      hours *= sgn;
+      minutes *= sgn;
+      seconds *= sgn;
+
+      return [hours, minutes, seconds];
+    },
+
+    changeTimeOfDay(milliseconds: number) {
+      const [hours, minutes, seconds] = this.hmsForMs(milliseconds);
+
+      let newSeconds = this.timeOfDay.seconds + seconds;
+      let newMinutes = this.timeOfDay.minutes + minutes;
+      let newHours = this.timeOfDay.hours + hours;
+      if (newSeconds < 0) {
+        newSeconds += 60;
+        newMinutes -= 1;
+      } else if (newSeconds > 60) {
+        newSeconds -= 60;
+        newMinutes += 1;
+      }
+
+      if (newMinutes < 0) {
+        newMinutes += 60;
+        newHours -= 1;
+      } else if (newMinutes > 60) {
+        newMinutes -= 60;
+        newHours += 1;
+      }
+
+      console.log(newHours);
+      if (newHours >= 24) {
+        newHours -= 24;
+        this.moveOneDayForward();
+      } else if (newHours < 0) {
+        newHours += 24;
+        this.moveOneDayBackward();
+      }
+      this.timeOfDay = { hours: newHours, minutes: newMinutes, seconds: newSeconds };
     }
   },
 
@@ -1858,15 +1923,7 @@ export default defineComponent({
     selectedTimezone(newTz: string, oldTz: string) {
       const newOffset = getTimezoneOffset(newTz);
       const oldOffset = getTimezoneOffset(oldTz);
-      let newHours = this.timeOfDay.hours + ((newOffset - oldOffset) / (1000*60*60));
-      if (newHours >= 24) {
-        newHours -= 24;
-        this.moveOneDayForward();
-      } else if (newHours < 0) {
-        newHours += 24;
-        this.moveOneDayBackward();
-      }
-      this.timeOfDay.hours = newHours;
+      this.changeTimeOfDay(newOffset - oldOffset);
     },
     
     playing(play: boolean) {
