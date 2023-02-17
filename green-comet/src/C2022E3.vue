@@ -1032,6 +1032,12 @@ export default defineComponent({
 
   methods: {
 
+    closestSliderDate(time: number) {
+      return dates.reduce((prev: number, curr: number) => {
+        return (Math.abs(curr - time) < Math.abs(prev - time) ? curr : prev);
+      });
+    },
+
     updateTimeFromSlider(time: number) {
       const thruDay = time % MILLISECONDS_PER_DAY;
       const date = time - thruDay;
@@ -1872,7 +1878,7 @@ export default defineComponent({
     showHorizon(_show: boolean) {
       this.updateHorizon();
     },
-    timeOfDay(_time: { hours: number; minutes: number; seconds: number }) {
+    timeOfDay(time: { hours: number; minutes: number; seconds: number }) {
       this.updateForDateTime();
     },
     location(loc: LocationRad, oldLoc: LocationRad) {
@@ -1901,8 +1907,11 @@ export default defineComponent({
     },
 
     selectedTime(newTime: number, oldTime: number) {
-      this.sliderValue += (newTime - oldTime);
       this.logTimes('selectedTime')
+    },
+
+    dateTime(dt: number) {
+      this.sliderValue = this.closestSliderDate(dt);
     },
     
     showLocationSelector(show: boolean) {
