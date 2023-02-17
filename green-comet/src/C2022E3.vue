@@ -1076,7 +1076,7 @@ export default defineComponent({
     },
 
     toDateString(date: Date) {
-      date = new Date(date.getTime() + this.selectedTimezoneOffset) // ignore timezone
+      // date = new Date(date.getTime() + this.selectedTimezoneOffset) // ignore timezone
       return `${date.getUTCMonth() + 1}/${date.getUTCDate()}/${date.getUTCFullYear()}`;
     },
 
