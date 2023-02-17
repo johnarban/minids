@@ -1194,7 +1194,7 @@ export default defineComponent({
         order: this.wwtActiveLayers.length + 1
       });
       const [month, day, year] = iset.get_name().split("/").map(x => parseInt(x));
-      this.selectedTime = Date.UTC(year, month - 1, day); 
+      this.selectedTime = Date.UTC(year, month - 1, day);
       this.showImageForDateTime(this.dateTime)
       // this.updateViewForDate();
 
@@ -1900,7 +1900,8 @@ export default defineComponent({
       this.updateForDateTime();
     },
 
-    selectedTime() {
+    selectedTime(newTime: number, oldTime: number) {
+      this.sliderValue += (newTime - oldTime);
       this.logTimes('selectedTime')
     },
     
