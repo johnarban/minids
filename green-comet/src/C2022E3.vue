@@ -1097,7 +1097,8 @@ export default defineComponent({
     },
 
     removeInterpolatedLayers() {
-      this.interpolatedLayerIDs.slice(0, this.interpolatedLayerIDs.length).forEach(id => this.deleteLayer(id));
+      this.interpolatedLayerIDs.forEach(id => this.deleteLayer(id));
+      this.interpolatedLayerIDs = [];
     },
 
     updateLayersForDate() {
