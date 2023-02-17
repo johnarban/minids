@@ -189,7 +189,6 @@ export default defineComponent({
       if (element !== null) {
         const container = document.getElementById("items");
         if (container !== null) {
-          console.log(element.clientHeight);
           const y = Math.max(Math.min(element.offsetTop - element.clientHeight * 1.5, container.scrollHeight), 0);
           container.scrollTo(0, y);
         }

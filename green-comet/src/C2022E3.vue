@@ -608,7 +608,7 @@ import { getTimezoneOffset } from "date-fns-tz";
 import tzlookup from "tz-lookup";
 import { MiniDSBase, BackgroundImageset, skyBackgroundImagesets } from "@minids/common"
 
-import { ImageSetLayer, Place, Imageset } from "@wwtelescope/engine";
+import { ImageSetLayer, Place, Imageset, Guid } from "@wwtelescope/engine";
 import { applyImageSetLayerSetting } from "@wwtelescope/engine-helpers";
 
 import { drawSkyOverlays, initializeConstellationNames, makeAltAzGridText, drawSpreadSheetLayer, layerManagerDraw } from "./wwt-hacks";
@@ -751,8 +751,8 @@ export default defineComponent({
       showHorizon: false,
 
       currentCometImageLayer: null as SpreadSheetLayer | null,
-      currentAllLayer: null as SpreadSheetLayer | null,
       interpolatedDailyTable: null as Table | null,
+      interpolatedLayerIDs: [] as Guid[],
 
       cometImageDates: cometImageDates,
       allDates: allDates,
@@ -796,8 +796,6 @@ export default defineComponent({
   },
 
   created() {
-
-    console.log(this.timeOfDay);
 
     this.waitForReady().then(async () => {
 
@@ -1098,13 +1096,14 @@ export default defineComponent({
       }
     },
 
+    removeInterpolatedLayers() {
+      this.interpolatedLayerIDs.slice(0, this.interpolatedLayerIDs.length).forEach(id => this.deleteLayer(id));
+    },
+
     updateLayersForDate() {
 
       this.interpolatedDailyTable = this.interpolatedTable(FullDatesTable);
-      if (this.currentAllLayer !== null) {
-        this.deleteLayer(this.currentAllLayer.id);
-        this.currentAllLayer = null;
-      }
+      this.removeInterpolatedLayers();
 
       if (this.interpolatedDailyTable !== null) {
         this.createTableLayer({
@@ -1112,7 +1111,7 @@ export default defineComponent({
           referenceFrame: "Sky",
           dataCsv: formatCsvTable(this.interpolatedDailyTable)
         }).then((layer) => {
-          this.currentAllLayer = layer;
+          this.interpolatedLayerIDs.push(layer.id);
           layer.set_lngColumn(1);
           layer.set_latColumn(2);
           layer.set_markerScale(MarkerScales.screen);
@@ -1294,8 +1293,6 @@ export default defineComponent({
     onTimeSliderChange(milliseconds: number, options?: MoveOptions) {
       this.updateTimeFromSlider(milliseconds);
       this.$nextTick(() => {
-        console.log(this.dateTime);
-        console.log(this.timeOfDay);
         this.showImageForDateTime(this.dateTime);
         this.updateViewForDate(options);
       });
@@ -1458,7 +1455,6 @@ export default defineComponent({
       // gives julian date: number of days since Jan 1, 4713 BC
       const JD = b + c + d + 1720994.5 + day + (hour + minute / 60.00 + second / 3600.00) / 24.00;
 
-      console.log(JD);
       return JD
 
     },
@@ -1808,7 +1804,7 @@ export default defineComponent({
     },
 
     logTimes(pre: string, date = null as Date | null) { 
-      console.log('running',pre);
+      //console.log('running',pre);
       // console.log("::: selectedTime:", new Date(this.selectedTime))
       // console.log('::: selectedDate:', this.selectedDate)
       // console.log('::: wwtCurrentTime:', this.wwtCurrentTime)
