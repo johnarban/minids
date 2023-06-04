@@ -3,11 +3,14 @@ name: Build and Deploy
 on:
   push:
     branches:
-      main
+      deploy
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    if: ${{ github.repository_owner == 'cosmicds' }}
+    if: ${{ github.repository_owner == 'johnarban' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,41 +40,6 @@ jobs:
         id: workspaces
         with:
           cmd: (cat package.json | jq -r '.workspaces | @sh') | tr -d \'
-
-      - name: BrowserStack env setup
-        uses: browserstack/github-actions/setup-env@master
-        with:
-          username:  ${{ secrets.BROWSERSTACK_USERNAME }}
-          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-
-      - name: 'BrowserStack local tunnel setup'
-        uses: browserstack/github-actions/setup-local@master
-        with:
-          local-testing: start
-          local-identifier: random
-
-      - name: Run BrowserStack tests
-        run: |
-          set -xeuo pipefail
-          workspaces=(${{ steps.workspaces.outputs.value }})
-          for ws in "${workspaces[@]}"
-          do
-            if [[ $ws != 'common' && $ws != 'tests' && -d tests/${ws} ]]
-            then
-              cd $ws
-              yarn serve &
-              sleep 10 # give the local service time to start up
-              cd ../tests
-              yarn bs-local -e default,firefox,edge,safari --group $ws -o reports
-              pkill -f vue-cli-service # stop the servers
-              cd ..
-            fi
-          done
-
-      - name: 'BrowserStackLocal Stop'  # Terminating the BrowserStackLocal tunnel connection
-        uses: browserstack/github-actions/setup-local@master
-        with:
-          local-testing: stop
         
       - name: Rearrange for Pages
         run: |
@@ -82,12 +50,14 @@ jobs:
             if [[ $draft != 'true' && $ws != 'common' && $ws != 'tests' ]]
             then
               mv ${ws}/dist dist/${ws}
+              # echo the command
+              echo "mv ${ws}/dist dist/${ws}"
+              ls -l dist/${ws}
             fi
           done
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages
           folder: dist
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          # ssh-key: ${{ secrets.DEPLOY_KEY }}
