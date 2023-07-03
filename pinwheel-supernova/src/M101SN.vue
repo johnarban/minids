@@ -407,12 +407,19 @@
           @keyup.enter="showVideoSheet = false"
           tabindex="0"
         ></font-awesome-icon>
-        <video
+        <iframe width="315" height="560"
+          id="info-video"
+          src="https://www.youtube.com/embed/eeQ3tvF1Mc0"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+        <!-- <video
           controls
           id="info-video"
         >
           <source src="./assets/video_2.mp4" type="video/mp4" autoplay>
-        </video>
+        </video> -->
       </div>
     </v-dialog>
 
@@ -2931,7 +2938,7 @@ div#main-content > div {
   // border: 1px solid white;
 }
 
-video {
+video, #info-video {
   margin: auto;
   height: 90%;
   width: auto;
