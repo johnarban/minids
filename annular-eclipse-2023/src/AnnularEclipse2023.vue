@@ -605,6 +605,28 @@
       </div>
     </div>
     
+    <div id="mobile-zoom-control">
+          <div class="slider-padding">
+            <v-icon>mdi-magnify-plus</v-icon>
+          </div>
+          <vue-slider 
+            v-model="userZoom"
+            direction="btt"
+            :min="-1.5"
+            :max="Math.round(Math.log10(360)*100)/100"
+            :interval=".01"
+            :color="accentColor"
+            :tooltip="'none'"
+            :duration="0"
+            :height="wwtContentHeight ? `${0.5 * wwtContentHeight}px` : '200px'"
+            :process-style="{ backgroundColor: 'rgb(255 193 203)' }"
+            :dot-style="{ backgroundColor: accentColor, borderColor: 'black'}"
+            ></vue-slider>
+          <div class="slider-padding">
+            <v-icon>mdi-magnify-minus</v-icon>
+          </div>
+      </div>
+    
     <v-overlay
       :model-value="showSplashScreen"
       absolute
@@ -1787,6 +1809,34 @@ export default defineComponent({
     defaultRate(): number {
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
     },
+
+    userZoom: {
+      get(): number {
+        return Math.round(Math.log10(this.wwtZoomDeg)*100)/100;
+      },
+      set(value: number) {
+        this.gotoRADecZoom({
+          raRad: this.wwtRARad,
+          decRad: this.wwtDecRad,
+          zoomDeg: Math.pow(10,value),
+          rollRad: 0,
+          instant: true
+        });
+      }
+    },
+
+    wwtContentHeight(): number | null {
+      console.log("wwtContentHeight", this.guidedContentHeight);
+      const mainContent = document.getElementById('main-content');
+      const windowHeight = window.innerHeight;
+      
+      if (mainContent) {
+        return windowHeight - parseInt(this.guidedContentHeight.replace('px', ''));
+      } else {
+        return null;
+      }
+    }  
+
   },
 
   methods: {
@@ -2872,6 +2922,31 @@ body {
   // border: 2px solid blue;
 
   // transition: height 0.1s ease-in-out;
+}
+
+#mobile-zoom-control {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  .vue-slider {    
+    .vue-slider-rail {
+      width: 10px;
+      left: calc(-10px / 2 + 2.5px);
+    }
+  }
+  
+  
+  .slider-padding {
+    margin-block: 1em;
+    color: var(--accent-color);
+  }
+  
 }
 
 #app {
